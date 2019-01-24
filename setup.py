@@ -1,13 +1,13 @@
 from setuptools import setup
 
-setup(name='claws',
+setup(name='claws-analysis-toolkit',
       version='0.1',
       description='Framework to handle the Claws data',
-#      url='http://github.com/storborg/funniest',
+      url='https://github.com/HendrikLamar/cat',
       author='Hendrik Windel',
       author_email='hwindel@mpp.mpg.de',
-      license='MIT',
-      packages=['claws'],
+      license='GPL-3.0',
+      packages=['cat'],
       install_requires=['pandas', 'configparser'],
       zip_safe=False)
 
