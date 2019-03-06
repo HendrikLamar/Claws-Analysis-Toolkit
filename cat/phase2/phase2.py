@@ -508,7 +508,7 @@ def TH1ToDf(th1):
         d['x'].append(th1.GetBinCenter(i))
         d['y'].append(th1.GetBinContent(i))
 
-    retur pd.DataFrame(d).set_index('x')
+    return pd.DataFrame(d).set_index('x')
 
 ########################################################################
 # Calculate average CLAWS waveform 
