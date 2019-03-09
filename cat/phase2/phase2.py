@@ -12,6 +12,26 @@ import matplotlib.pyplot as plt
 from ROOT import TFile, TH1, TH1I, TH1F, TCanvas
 
 ########################################################################
+# Lists all dates where data is avaiable
+########################################################################
+def getAllDatesOfData( pathToData ):
+    '''                                                                                                 
+    Parameters                                                                     
+    ----------                                              
+    pathToData : string                                                                                
+        path to the data, up to the level of the JJJJ-MM-DD dir                                                 structure.                                                                                                                                                                                           
+        !Should be an absolute path!                                                                     
+    Returns                                                                           
+    -------
+    dates : list of strings          
+    '''
+    listOfAllDates = os.listdir( pathToData )
+    listOfAllDates = [ i for i in listOfAllDates if len(i)==len('JJJJ-MM-DD') ]
+    listOfAllDates.sort()
+
+    return listOfAllDates
+
+########################################################################
 # Creates a list of dates where data is available
 ########################################################################
 def provideListOfDates(
@@ -252,7 +272,10 @@ def th1XScale( th1, factor ):
 # Averages the waveforms over the given events. Per event all given 
 # locations and channels are summed up.
 ########################################################################
-def makeAvg( dfPaths, picos, channels):
+def makeAvg( dfPaths,
+             picos,
+             channels
+            ):
     '''
     Parameters
     ----------
@@ -474,6 +497,10 @@ def saveFig(fig,
     optional - png : bool
     
     optional - dpi_fix : integer
+
+    Returns
+    -------
+    creates a new file for each data type
     '''
     dtitle = 0
     if title == "":
@@ -598,7 +625,9 @@ def readEvent( pathToRootFile ):
         Path to the phase2 root file.
     
     Returns 
-    ----------
+    -------
+    datas : array
+        array of dictonaries 
     
     '''
 
