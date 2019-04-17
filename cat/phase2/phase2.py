@@ -11,19 +11,18 @@ import matplotlib.pyplot as plt
 
 from ROOT import TFile, TH1, TH1I, TH1F, TCanvas
 
-########################################################################
-# Lists all dates where data is avaiable
-########################################################################
 def getAllDatesOfData( pathToData ):
-    '''                                                                                                 
-    Parameters                                                                     
-    ----------                                              
-    pathToData : string                                                                                
-        path to the data, up to the level of the JJJJ-MM-DD dir                                                 structure.                                                                                                                                                                                           
-        !Should be an absolute path!                                                                     
-    Returns                                                                           
+    '''
+    Lists all dates where data is avaiable.
+
+    Parameters
+    ----------
+    pathToData : string
+        path to the data, up to the level of the JJJJ-MM-DD dir                                                 structure.
+        !Should be an absolute path!
+    Returns
     -------
-    dates : list of strings          
+    dates : list of strings
     '''
     listOfAllDates = os.listdir( pathToData )
     listOfAllDates = [ i for i in listOfAllDates if len(i)==len('JJJJ-MM-DD') ]
@@ -31,28 +30,28 @@ def getAllDatesOfData( pathToData ):
 
     return listOfAllDates
 
-########################################################################
-# Creates a list of dates where data is available
-########################################################################
+
 def provideListOfDates(
     startDate,
-    endDate, 
+    endDate,
     pathToData
     ):
     '''
+    Creates a list of dates where data is available.
+
     Parameters
     ----------
-  
+
     startDate : string
         should be given in the form of JJJJ-MM-DD
-    
+
     endDate : string
         should be given in the form of JJJJ-MM-DD
-    
+
     pathToData : string
-        path to the data, up to the level of the JJJJ-MM-DD dir 
-        structure. 
-        
+        path to the data, up to the level of the JJJJ-MM-DD dir
+        structure.
+
         !Should be an absolute path!
 
     Returns
@@ -64,47 +63,48 @@ def provideListOfDates(
     a = os.listdir( pathToData )
     b = [i for i in a if len(i)==len(startDate) ]
     b.sort()
-    dates = b[ b.index( startDate ):b.index( endDate )+1 ]                        
-    
+    dates = b[ b.index( startDate ):b.index( endDate )+1 ]
+
     return dates
 
 ########################################################################
-# Creates a list of paths to all files of the specified time 
-# periode and data type
 ########################################################################
 def findFiles(
-        dates, 
+        dates,
         pathToData,
         defRundNumRange=('',''),
         dType="online"
         ):
     '''
+    Creates a list of paths to all files of the specified time
+    periode and data type.
+
     Parameters
     ----------
-  
-    dates : list of str of the form ['JJJJ-MM-DD', 'JJJJ-MM-DD', ...], 
+
+    dates : list of str of the form ['JJJJ-MM-DD', 'JJJJ-MM-DD', ...],
         can be accired by using the function "provideListOfDates()"
-    
+
     pathToData : string
-        path to the data, up to the level of the JJJJ-MM-DD dir 
-        structure. 
-        
+        path to the data, up to the level of the JJJJ-MM-DD dir
+        structure.
+
         !Should be an absolute path!
-        
+
     defRundNumRange : Tuple
-        By specifying a tuple of the form (start run #, end run #) one 
-        can have a look at a certain set of runs within the specified 
-        time range. Any entry which can be converted to an integer is 
+        By specifying a tuple of the form (start run #, end run #) one
+        can have a look at a certain set of runs within the specified
+        time range. Any entry which can be converted to an integer is
         acceptable
-        
+
     dType : string
-    
+
     Returns
     -------
     files : list of strings (file paths)
     '''
     files = []
-    
+
     for date in dates:
         pathToRuns = pathToData + '/' + date +'/'
         runsRaw = os.listdir( pathToRuns )
@@ -113,11 +113,11 @@ def findFiles(
         runs = []
 
         if not defRundNumRange == ('',''):
-            if ( runNumStart <= int(defRundNumRange[0]) 
+            if ( runNumStart <= int(defRundNumRange[0])
                 or runNumEnd >= int(defRundNumRange[1]) ):
                 for i in runsRaw:
-                    if (int(defRundNumRange[0]) 
-                        <= int( i.split('-')[1]) 
+                    if (int(defRundNumRange[0])
+                        <= int( i.split('-')[1])
                         <= int(defRundNumRange[1]) ):
                         runs.append(i)
             else:
@@ -137,21 +137,21 @@ def findFiles(
 
     return files
 
-########################################################################
-# Transforms the unix timestamp taken at KEK (JST) to human readable
-# time format in JST timezone.
-#
-# !!! Bew ware: If this is used at KEK things might go wrong. !!!
-#                    !!! Please verify !!!
-########################################################################
+
 def unixToHumanJSTTime(ts):
-    '''                                                                
-    Parameters                                                                                          
-    ---------- 
+    '''
+    Transforms the unix timestamp taken at KEK (JST) to human readable
+    time format in JST timezone.
+
+    !!! Bew ware: If this is used at KEK things might go wrong. !!!
+                       !!! Please verify !!!
+
+    Parameters
+    ----------
     ts :
-    
+
     Returns
-    ---------- 
+    ----------
     The japanese standrad time in the format of YYYY-MM-DD HH:MM:SS
     '''
     utc_ts = datetime.fromtimestamp(ts)
@@ -160,19 +160,19 @@ def unixToHumanJSTTime(ts):
     jst_time = utc_ts + jst.utcoffset(utc_ts) - cet.utcoffset(utc_ts)
     return jst_time.strftime("%Y-%m-%d %H:%M:%S.%f")
 
-########################################################################
-# Creates a pandas.DataFrame from a given set of Files
-########################################################################
+
 def getPandasDF( files, onePerRunNumber=False ):
     '''
+    Creates a pandas.DataFrame from a given set of files.
+
     Parameters
     ----------
     files : list of absolute file paths; string type
 
     onePerRunNumber : bool
         Default: False
-        If set to True, only one file per runNumber is considered. This 
-        can be useful when working with eg. 1pe integral data since it 
+        If set to True, only one file per runNumber is considered. This
+        can be useful when working with eg. 1pe integral data since it
         is the same value for one run.
     '''
 
@@ -198,7 +198,7 @@ def getPandasDF( files, onePerRunNumber=False ):
 
         if counter %10000 == 0:
             print('#{0} {1}'.format(counter,file))
-        
+
         try:
             # read event and find correct timerange the data was
             # recorded in
@@ -216,13 +216,13 @@ def getPandasDF( files, onePerRunNumber=False ):
             datas.append(data)
         except Exception as exce:
             print('{0} not available: {1}'.format(file, exce.args))
-        
+
         counter += 1
 
     print('Found {} files.'.format(len(lrunNumber)))
     print('TMin: {0} \t TMax: {1}'.format(tmin,tmax))
     print('TMin: {0} JST\t TMax: {1} JST'.format(
-                                            unixToHumanJSTTime(tmin), 
+                                            unixToHumanJSTTime(tmin),
                                             unixToHumanJSTTime(tmax)
                                             )
          )
@@ -241,12 +241,12 @@ def getPandasDF( files, onePerRunNumber=False ):
         return None
     return output
 
-########################################################################
-# Rescales the th1 xAxis by the given factor. Remember to change the 
-# xAxis legend!
-########################################################################
+
 def th1XScale( th1, factor ):
     '''
+    Rescales the th1 xAxis by the given factor. Remember to change the
+    xAxis legend!
+
     Parameters
     ----------
     th1 : ROOT.TH1
@@ -269,21 +269,22 @@ def th1XScale( th1, factor ):
     return th1
 
 ########################################################################
-# Averages the waveforms over the given events. Per event all given 
-# locations and channels are summed up.
 ########################################################################
 def makeAvg( dfPaths,
              picos,
              channels
             ):
     '''
+    Averages the waveforms over the given events. Per event all given
+    locations and channels are summed up.
+
     Parameters
     ----------
     dfPaths : pandas.DataFrame
         Data frame with index and paths for events only.
 
     picos : list of str
-        List with all locations/picos which should be considered. 
+        List with all locations/picos which should be considered.
         Possible locations:
             - 'Top_Forward'
             - 'Top_Backward'
@@ -292,7 +293,7 @@ def makeAvg( dfPaths,
             e.g. picos = ['Top_Forward', 'Bottom_Backward']
 
     channels : list of str
-        List with all channels which should be considered. Possible 
+        List with all channels which should be considered. Possible
         channels:
             - 'A'
             - 'B'
@@ -302,7 +303,7 @@ def makeAvg( dfPaths,
 
     Returns
     -------
-    th1 : ROOT.TH1I 
+    th1 : ROOT.TH1I
         average waveform
     th2 : ROOT.TH1I
         signal heigth histogram.
@@ -314,7 +315,7 @@ def makeAvg( dfPaths,
     th1 = 0
     th2 = 0
     thh = TH1F('Signal heigth histogram',
-                'Signal height histogram', 
+                'Signal height histogram',
                 1000,
                 0,
                 1000
@@ -332,19 +333,19 @@ def makeAvg( dfPaths,
 
         for pico in picos:
             for channel in channels:
-                dth1 = tfile.Get(pico 
-                                + '_' 
-                                + channel 
-                                + '_' 
+                dth1 = tfile.Get(pico
+                                + '_'
+                                + channel
+                                + '_'
                                 + bg.items_channel['reco']
                                 )
                 dmax = dth1.GetBinContent(dth1.GetMaximumBin())
                 dmin = dth1.GetMinimum()
                 if dmax > 1e6:
-                    print('{0}_{1} max bin content too high: {2}'.format(pico,channel,dmax))    
+                    print('{0}_{1} max bin content too high: {2}'.format(pico,channel,dmax))
                     continue
                 if dmin < -1e6:
-                    print('{0}_{1} min bin content too low: {2}'.format(pico,channel,dmin))    
+                    print('{0}_{1} min bin content too low: {2}'.format(pico,channel,dmin))
                     continue
 
                 if dmax > highestVal:
@@ -355,7 +356,7 @@ def makeAvg( dfPaths,
                     firstEvent = False
                 else:
                     th2.Add(dth1)
-                
+
                 for i in range(dth1.GetNbinsX()):
                     dval = dth1.GetBinContent(i+1)
                     if dval > 1e-6:
@@ -391,9 +392,9 @@ def makeAvg( dfPaths,
 
     th1.SetTitle(title)
     print('# of overlaid events:'
-         +' {0}\nmaxVal: {3}\nPicos {1}\nChannels {2}'.format(counter, 
-                                                            picos, 
-                                                            channels, 
+         +' {0}\nmaxVal: {3}\nPicos {1}\nChannels {2}'.format(counter,
+                                                            picos,
+                                                            channels,
                                                             highestVal)
          )
     th1.Scale(1./counter)
@@ -401,14 +402,14 @@ def makeAvg( dfPaths,
 
     return th1, thh
 
-########################################################################
-# simple Fourier Transformation approximation:
-# This function determines the distance between all peaks and weigths 
-# that with the product of the heights of the two peaks. Therefore, the
-# output unit on the y axis is MIPs x MIPs / bin width.
-########################################################################
+
 def makeFFT(th1Wf):
     '''
+    Simple Fourier Transformation approximation:
+    This function determines the distance between all peaks and weigths
+    that with the product of the heights of the two peaks. Therefore, the
+    output unit on the y axis is MIPs x MIPs / bin width.
+
     Parameters
     ----------
     th1Wf : ROOT.TH1
@@ -417,14 +418,14 @@ def makeFFT(th1Wf):
     Returns
     -------
     ROOT.TH1F
-        Return the 'low cost' fast fourier transformation of the input 
+        Return the 'low cost' fast fourier transformation of the input
         waveform.
     '''
     # create dummy container filled with zeros
     ######
     ddata = [0. for bin in range(th1Wf.GetNbinsX())]
 
-    # loop through th1Wf. Measure distance between two entries and fill 
+    # loop through th1Wf. Measure distance between two entries and fill
     # that into  the data container weigthed with the product of the two
     # entries
     ######
@@ -433,34 +434,33 @@ def makeFFT(th1Wf):
         for sbin in range(bin+1,th1Wf.GetNbinsX()):
             y1 = th1Wf.GetBinContent(sbin)
             ddata[sbin-bin] += y0*y1
-    
+
     ####################################################################
     # transform the data from the dummy container to a th1Wf
     ####################################################################
-    # create new th1Wff for fft content 
+    # create new th1Wff for fft content
     ######
-    th2 = TH1F('tff',  
+    th2 = TH1F('tff',
             'tff',
             th1Wf.GetNbinsX(),
             0,
             th1Wf.GetBinCenter(th1Wf.GetNbinsX())
-            ) 
+            )
     th2.SetXTitle('Time [ms]')
     th2.SetYTitle('MIPs x MIPs / {0}us [x1000]'.format('8'))
     th2.SetTitle('{0}_{1}'.format(th1Wf.GetTitle(),'FFT'))
     for bin in range(len(ddata)):
         th2.SetBinContent(bin,ddata[bin])
     th2.Scale(1./1000.)
-    
+
     return th2
 
-########################################################################
-# Saves the TCanvas in several formats including the info file;
-#    !!! 2018-06-01 jpg does not work because of missing codecs !!!
-########################################################################
+
 def saveCanvas( c1, name, info = ""):
-    '''  
-    
+    '''
+    Saves the TCanvas in several formats including the info file;
+    !!! 2018-06-01 jpg does not work because of missing codecs !!!
+
     '''
     c1.SaveAs(name + ".root")
     c1.SaveAs(name + ".pdf")
@@ -471,11 +471,9 @@ def saveCanvas( c1, name, info = ""):
     with open(name+".info",'w') as f:
         f.write(info)
 
-########################################################################
-# Saves a Figure as PDF, JPG and PNG with a specified quality
-########################################################################
-def saveFig(fig, 
-            ax, 
+
+def saveFig(fig,
+            ax,
             title="",
             pdf = True,
             jpg = True,
@@ -483,19 +481,21 @@ def saveFig(fig,
             dpi_fix = 150
             ):
     '''
+    Saves a Figure as PDF, JPG and PNG with a specified quality
+
     Parameters
     ----------
-    fig : 
+    fig :
         Path to info*.ini file
-    ax : 
+    ax :
         matplotlip output ....
     optional - title : string
-                    string with no white spaces or other path forbidden 
+                    string with no white spaces or other path forbidden
                     asci symboles
-    optional - pdf : bool 
-    optional - jpg : bool 
+    optional - pdf : bool
+    optional - jpg : bool
     optional - png : bool
-    
+
     optional - dpi_fix : integer
 
     Returns
@@ -507,7 +507,7 @@ def saveFig(fig,
         dtitle = ax.get_title()
     else:
         dtitle = title
-    if pdf: 
+    if pdf:
         fig.savefig('{0}.pdf'.format(dtitle), dpi=dpi_fix)
     if jpg:
         fig.savefig('{0}.jpg'.format(dtitle), dpi=dpi_fix)
@@ -515,11 +515,10 @@ def saveFig(fig,
         fig.savefig('{0}.png'.format(dtitle), dpi=dpi_fix)
 
 
-########################################################################
-# Converts a ROOT.TH1 to a pandas.DataFrame.
-########################################################################
 def TH1ToDf(th1):
     '''
+    Converts a ROOT.TH1 to a pandas.DataFrame.
+
     Parameters
     ----------
     th1 : ROOT.TH1
@@ -537,11 +536,11 @@ def TH1ToDf(th1):
 
     return pd.DataFrame(d).set_index('x')
 
-########################################################################
-# Calculate average CLAWS waveform 
-########################################################################
+
 def makeAveragedWf( rawWFdatafram ):
     '''
+    Calculate average CLAWS waveform
+
     Parameters
     ----------
     rawWFdatafram : pandas data frame
@@ -555,15 +554,15 @@ def makeAveragedWf( rawWFdatafram ):
     avWFdatafram = rawWFdatafram
     avWFdatafram['cumsum'] = avWFdatafram.cumsum()/avWFdatafram.y.sum()*100
     avWFdatafram.index = avWFdatafram.index/1000.
-    
+
     return avWFdatafram
 
-########################################################################
-# Helper function for readEvent function, only for early phase 2 data:
-# Find info*.ini to corresponding root file
-########################################################################
+
 def makePathToInfo( filepath ):
     '''
+    Helper function for readEvent function, only for early phase 2 data:
+    Find info*.ini to corresponding root file
+
     Parameters
     ----------
     pIni : str
@@ -580,14 +579,14 @@ def makePathToInfo( filepath ):
 
     return filepath
 
-########################################################################
-# Helper function for readEvent function, only for early phase 2 data:
-# Optain timestamp for early phase 2 data
-# Necessary since the timestamp is not available in some root files at 
-# the beginning of phase2.
-########################################################################
+
 def getTimestamp( pIni ):
     '''
+    Helper function for readEvent function, only for early phase 2 data:
+    Optain timestamp for early phase 2 data
+    Necessary since the timestamp is not available in some root files at
+    the beginning of phase2.
+
     Parameters
     ----------
     pIni : str
@@ -612,23 +611,22 @@ def getTimestamp( pIni ):
 
     return timestamp
 
-########################################################################
-# Reads one event/file
-# Is dependent on the getTimestamp and makePathToInfo helper functions 
-# for early phase 2 data
-########################################################################
 def readEvent( pathToRootFile ):
     '''
+    Reads one event/file
+    Is dependent on the getTimestamp and makePathToInfo helper functions
+    for early phase 2 data
+
     Parameters
     ----------
     pathToRootFile : string
         Path to the phase2 root file.
-    
-    Returns 
+
+    Returns
     -------
     datas : array
-        array of dictonaries 
-    
+        array of dictonaries
+
     '''
 
     tfile = TFile(pathToRootFile)
@@ -667,7 +665,7 @@ def readEvent( pathToRootFile ):
         else:
             lerCV = lerC.GetBinContent(1)
             herCV = herC.GetBinContent(1)
-            
+
         lerG = tfile.Get(pico + '_' + bg.items_pico['lerBGate'])
         herG = tfile.Get(pico + '_' + bg.items_pico['herBGate'])
         if not (lerG or herG):
@@ -676,7 +674,7 @@ def readEvent( pathToRootFile ):
         else:
             lerGV = lerG.GetBinContent(1)
             herGV = herG.GetBinContent(1)
-            
+
         lerID = tfile.Get(pico + '_' + bg.items_pico['lerID'])
         herID = tfile.Get(pico + '_' + bg.items_pico['herID'])
         if not (lerID or herID):
@@ -688,10 +686,10 @@ def readEvent( pathToRootFile ):
 
         for channel in bg.channels:
             data = {}
-            tth1 = tfile.Get(pico 
-                            + '_' 
-                            + channel 
-                            + '_' 
+            tth1 = tfile.Get(pico
+                            + '_'
+                            + channel
+                            + '_'
                             + bg.items_channel['reco'])
             if not tth1:
                 raise Exception(
@@ -700,30 +698,30 @@ def readEvent( pathToRootFile ):
                             )
 
 
-            onePeV = tfile.Get(pico 
-                                + '_' 
-                                + channel 
-                                + '_' 
+            onePeV = tfile.Get(pico
+                                + '_'
+                                + channel
+                                + '_'
                                 + bg.items_channel['1pe']
                                 ).GetBinContent(1)
-            onePeRatioV = tfile.Get(pico 
-                                    + '_' 
-                                    + channel 
-                                    + '_' 
+            onePeRatioV = tfile.Get(pico
+                                    + '_'
+                                    + channel
+                                    + '_'
                                     + bg.items_channel['1peVStotal']
                                     ).GetBinContent(1)
 
             data['maxVal'] = tth1.GetMaximum()
             data['minVal'] = tth1.GetMinimum()
             data['maxValBin'] = tth1.GetMaximumBin()
-            data['rate'] = tfile.Get( pico 
-                            + '_' 
-                            + channel 
-                            + '_' 
+            data['rate'] = tfile.Get( pico
+                            + '_'
+                            + channel
+                            + '_'
                             + bg.items_channel['mips']
                             ).GetBinContent(1) \
-                            / ( (tth1.GetBinCenter( tth1.GetNbinsX() ) 
-                                +tth1.GetBinWidth(1)/2.0) 
+                            / ( (tth1.GetBinCenter( tth1.GetNbinsX() )
+                                +tth1.GetBinWidth(1)/2.0)
                                 *1.e-6) \
                             / 1.e6 \
                             / 4.0
