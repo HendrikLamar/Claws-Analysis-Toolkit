@@ -108,7 +108,7 @@ def findFiles(
     ----------
 
     dates : list of str of the form ['JJJJ-MM-DD', 'JJJJ-MM-DD', ...],
-        can be accired by using the function "provideListOfDates()"
+        can be accurate by using the function "provideListOfDates()"
 
     pathToData : string
         path to the data, up to the level of the JJJJ-MM-DD dir
@@ -293,8 +293,7 @@ def th1XScale( th1, factor ):
 
     return th1
 
-########################################################################
-########################################################################
+
 def makeAvg( dfPaths,
              picos,
              channels
