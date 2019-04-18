@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 
 from ROOT import TFile, TH1, TH1I, TH1F, TCanvas
 
-def getAllDatesOfData( pathToData ):
 from pathlib import Path
 import os
 
@@ -38,6 +37,9 @@ def setDefaultDataPath(path=None):
 
     raise OSError('Path could not be found! Does it exist?')
 
+
+
+def getAllDatesOfData( pathToData=bg.path_to_data ):
     '''
     Lists all dates where data is avaiable.
 
@@ -60,7 +62,7 @@ def setDefaultDataPath(path=None):
 def provideListOfDates(
     startDate,
     endDate,
-    pathToData
+    pathToData=bg.path_to_data
     ):
     '''
     Creates a list of dates where data is available.
@@ -96,7 +98,7 @@ def provideListOfDates(
 
 def findFiles(
         dates,
-        pathToData,
+        pathToData=bg.path_to_data,
         defRundNumRange=('',''),
         dType="online"
         ):
@@ -115,6 +117,8 @@ def findFiles(
         structure.
 
         !Should be an absolute path!
+
+        The default is defined by setDefaultDataPath()
 
     defRundNumRange : Tuple
         By specifying a tuple of the form (start run #, end run #) one
