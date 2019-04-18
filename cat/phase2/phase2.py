@@ -38,6 +38,12 @@ def setDefaultDataPath(path=None):
     raise OSError('Path could not be found! Does it exist?')
 
 
+def getDataPath():
+    '''
+    Returns the current data path.
+    '''
+    return bg.path_to_data
+
 
 def getAllDatesOfData( pathToData=bg.path_to_data ):
     '''
