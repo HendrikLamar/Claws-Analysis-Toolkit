@@ -35,7 +35,7 @@ def setDefaultDataPath(path=None):
             print('Path is set to {}'.format(bg.path_to_data))
             return
 
-    raise OSError('Path could not be found! Does it exist?')
+    raise OSError('Data path could not be found! Please define!')
 
 
 def getDataPath():
@@ -52,7 +52,7 @@ def getAllDatesOfData( pathToData=None):
     Parameters
     ----------
     pathToData : string
-        path to the data, up to the level of the JJJJ-MM-DD dir                                                 structure.
+        path to the data, up to the level of the JJJJ-MM-DD dir structure.
         !Should be an absolute path!
     Returns
     -------
