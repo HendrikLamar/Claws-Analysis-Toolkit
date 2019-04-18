@@ -45,7 +45,7 @@ def getDataPath():
     return bg.path_to_data
 
 
-def getAllDatesOfData( pathToData=bg.path_to_data ):
+def getAllDatesOfData( pathToData=None):
     '''
     Lists all dates where data is avaiable.
 
@@ -58,6 +58,9 @@ def getAllDatesOfData( pathToData=bg.path_to_data ):
     -------
     dates : list of strings
     '''
+    if pathToData == None:
+        pathToData = getDataPath()
+
     listOfAllDates = os.listdir( pathToData )
     listOfAllDates = [ i for i in listOfAllDates if len(i)==len('JJJJ-MM-DD') ]
     listOfAllDates.sort()
@@ -68,7 +71,7 @@ def getAllDatesOfData( pathToData=bg.path_to_data ):
 def provideListOfDates(
     startDate,
     endDate,
-    pathToData=bg.path_to_data
+    pathToData=None
     ):
     '''
     Creates a list of dates where data is available.
@@ -92,6 +95,9 @@ def provideListOfDates(
     -------
     dates : list of strings
     '''
+    if pathToData == None:
+        pathToData = getDataPath()
+
     dates = []
     files = []
     a = os.listdir( pathToData )
@@ -104,7 +110,7 @@ def provideListOfDates(
 
 def findFiles(
         dates,
-        pathToData=bg.path_to_data,
+        pathToData=None,
         defRundNumRange=('',''),
         dType="online"
         ):
@@ -138,6 +144,9 @@ def findFiles(
     -------
     files : list of strings (file paths)
     '''
+    if pathToData == None:
+        pathToData = getDataPath()
+
     files = []
 
     for date in dates:
