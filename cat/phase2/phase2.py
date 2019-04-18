@@ -12,6 +12,32 @@ import matplotlib.pyplot as plt
 from ROOT import TFile, TH1, TH1I, TH1F, TCanvas
 
 def getAllDatesOfData( pathToData ):
+from pathlib import Path
+import os
+
+
+def setDefaultDataPath(path=None):
+    '''
+    Sets the path to the data on the NAS.
+    The default path is $HOME/NAS_futDet/claws/phase2/raw/
+
+    If this does not apply to you, please define it yourself with the path variable.
+    '''
+
+    if path == None:
+        home = str(Path.home())
+        bg.path_to_data = os.path.join(home,"NAS_futDet/claws/phase2/raw")
+        if os.path.isdir(bg.path_to_data):
+            print('Path is set to {}'.format(bg.path_to_data))
+            return
+    else:
+        if os.path.isdir(path):
+            bg.path_to_data = path
+            print('Path is set to {}'.format(bg.path_to_data))
+            return
+
+    raise OSError('Path could not be found! Does it exist?')
+
     '''
     Lists all dates where data is avaiable.
 
