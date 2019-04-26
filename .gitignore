@@ -1,3 +1,12 @@
+# Sphinx stuff
+_build/
+Makefile
+make.bat
+index.rst
+conf.py
+
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -128,4 +137,3 @@ tags
 [._]*.un~
 
 # End of https://www.gitignore.io/api/vim
-
