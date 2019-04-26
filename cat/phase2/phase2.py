@@ -15,7 +15,7 @@ from pathlib import Path
 import os
 
 
-def setDefaultDataPath(path=None):
+def setDataPath(path=None):
     '''
     Sets the path to the data on the NAS.
     The default path is $HOME/NAS_futDet/claws/phase2/raw/
@@ -27,12 +27,12 @@ def setDefaultDataPath(path=None):
         home = str(Path.home())
         bg.path_to_data = os.path.join(home,"NAS_futDet/claws/phase2/raw")
         if os.path.isdir(bg.path_to_data):
-            print('Path is set to {}'.format(bg.path_to_data))
+            print('Data path is set to {}'.format(bg.path_to_data))
             return
     else:
         if os.path.isdir(path):
             bg.path_to_data = path
-            print('Path is set to {}'.format(bg.path_to_data))
+            print('Data path is set to {}'.format(bg.path_to_data))
             return
 
     raise OSError('Data path could not be found! Please define!')
@@ -71,7 +71,7 @@ def getAllDatesOfData( pathToData=None):
 def provideListOfDates(
     startDate,
     endDate,
-    pathToData=None
+    # pathToData=None
     ):
     '''
     Creates a list of dates where data is available.
