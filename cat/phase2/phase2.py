@@ -792,8 +792,8 @@ def readEvent( pathToRootFile ):
             data['herID'] = herIDV
             data['xbins'] = tth1.GetNbinsX()
             data['path'] = pathToRootFile
-            data['1pe'] = onePeV
-            data['1peRatio'] = onePeRatioV
+            data['OnePe'] = onePeV
+            data['OnePeRatio'] = onePeRatioV
 
             datas.append(data)
 
