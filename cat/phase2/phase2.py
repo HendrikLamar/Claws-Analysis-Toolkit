@@ -694,7 +694,7 @@ def readEvent( pathToRootFile ):
 
     tfile = TFile(pathToRootFile)
     if not tfile:
-        raise Exception("TFile is empty or does not exist: " + tfile)
+        raise IOError("TFile is empty or does not exist: " + tfile)
 
     datas = []
     # extract the runnumber and subrunnumber from the filename
