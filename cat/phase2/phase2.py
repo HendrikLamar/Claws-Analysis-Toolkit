@@ -160,7 +160,7 @@ def findFiles(
     files = []
 
     for date in dates:
-        pathToRuns = pathToData + '/' + date +'/'
+        pathToRuns = os.path.join(pathToData, date)
         runsRaw = os.listdir( pathToRuns )
         runNumStart = int( runsRaw[0].split('-')[1] )
         runNumEnd = int(  runsRaw[-1].split('-')[1] )
@@ -179,15 +179,25 @@ def findFiles(
         else:
             runs = runsRaw
 
+        if dType.find('inter') > -1:
+            dType = 'raw/intermediate'
+        elif dType.find('physics') > -1:
+            dType = 'raw/physics'
+
         for i in runs:
-            pathTof = pathToRuns + i +'/' + dType
+            try:
+                pathTof = os.path.join(pathToRuns, i, dType)
+                os.path.isdir(pathTof)
+            except Exception as e:
+                print(e)
+                continue
             try:
                 filenames = os.listdir( pathTof )
             except Exception as exce:
                 print(exce)
+                continue
             for j in filenames:
-                if j[:len(dType)] == dType:
-                    files.append(pathTof + '/' + j)
+                files.append(os.path.join(pathTof, j))
 
     return files
 
