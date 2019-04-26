@@ -45,6 +45,16 @@ def getDataPath():
     return bg.path_to_data
 
 
+def setIndexFilePath(path):
+    bg.path_to_indexFile = path
+    print("Index file path is set to {}".format(bg.path_to_indexFile))
+
+
+def getIndexFilePath():
+    return bg.path_to_indexFile
+
+
+
 def getAllDatesOfData( pathToData=None):
     '''
     Lists all dates where data is avaiable.
@@ -789,3 +799,166 @@ def readEvent( pathToRootFile ):
 
     tfile.Close()
     return datas
+
+
+
+def getPandasDF(firstEvent,
+                lastEvent,
+                onePerRunNumber=False,
+                dtype = 'online'
+                ):
+    '''
+    Creates a pandas.DataFrame from the data given in the range defined by
+    first- and lastEvent.
+
+    Parameters
+    ----------
+    firstEvent : int
+        10 digit number with the first event which should be considered.
+        The first 6 digits are the runNumber, the last four the subRunNumber,
+        e.g. 5001080000
+
+    lastEvent : int
+        10 digit number with the last event which should be considered.
+        The first 6 digits are the runNumber, the last four the subRunNumber,
+        e.g. 5001080199
+
+    onePerRunNumber : bool
+        Default: False
+        If set to True, only one file per runNumber is considered. This can be
+        useful when working with eg. 1pe integral data since it is the same
+        value for one run.
+
+    dtype : str
+        Options are 'physics' or 'online', depending on the data you want.
+    '''
+
+    # predefine variables
+    tmin = 0
+    tmax = 0
+    data = []
+    datas = []
+    counter = 0
+    lrunNumber = []
+    files = _findByIndexFile(firstEvent,
+                            lastEvent,
+                            dtype = dtype
+                            )
+
+    for file in files:
+        # if 'oneperrunnumber' is true, check if run was processed already
+        cRunNumber = int(re.findall('\d+',file)[-2])
+        if onePerRunNumber:
+            if cRunNumber in lrunNumber:
+                continue
+        # keep a list of which runnumbers are processed for
+        # 1. if onePerRunNumber is true
+        # 2. to print out how many files were found
+        lrunNumber.append(cRunNumber)
+
+        if counter %10000 == 0:
+            print('#{0} {1}'.format(counter,file))
+
+        try:
+            # read event and find correct timerange the data was recorded in
+            data = readEvent(file)
+            if counter == 0:
+                tmin = data[0]['timestamp']
+                tmax = data[0]['timestamp']
+            else:
+                for channel in data:
+                    dt = channel['timestamp']
+                    if tmin > dt:
+                        tmin = dt
+                    elif tmax < dt:
+                        tmax = dt
+            datas.append(data)
+        except Exception as exce:
+            print('{0} not available: {1}'.format(file, exce.args))
+
+        counter += 1
+
+    print('Found {} files.'.format(len(lrunNumber)))
+    print('TMin: {0} \t TMax: {1}'.format(tmin,tmax))
+    print('TMin: {0} JST\t TMax: {1} JST'.format(unixToHumanJSTTime(tmin), unixToHumanJSTTime(tmax)))
+
+    try:
+        # create pandas.DataFrame and define some types
+        output = pd.DataFrame([pair for data in datas for pair in data])
+        output['time'] = pd.to_datetime(output['time'],format="%Y-%m-%d %H:%M:%S.%f")
+        output['runNumber'] = output.runNumber.astype('int')
+        output['subRunNumber'] = output.subRunNumber.astype('int')
+    except KeyError as keyerr:
+        print('Key error was caught. Key {0} not available!'.format(keyerr.args))
+        return None
+    return output
+
+
+def _findByIndexFile(   firstEvent,
+                        lastEvent,
+                        pathToIndexFile=None,
+                        pathToData=None,
+                        dType="online"):
+    '''
+    Finds the events in the given range thanks to a index file.
+    This is much faster when in the MPP since the data is on a nas and network is slow.
+
+    Parameters
+    ----------
+    firstEvent : int
+    lastEvent : int
+
+    pathToIndexFile : str
+        Absolute path to the index file.
+
+    pathToData : str
+        The index file only contains the path information in the data folder.
+        Therefore the path to the data folder needs to be specified.
+
+    dType : str
+        This can be either 'physics' or 'online'.
+
+    Returns
+    -------
+    list of str
+        Absolute paths to the files.
+    '''
+    if pathToIndexFile == None:
+        pathToIndexFile = getIndexFilePath()
+    if pathToData == None:
+        pathToData = getDataPath()
+
+    # extract the run and subrun numbers
+    fRunN = str(firstEvent)[:6]
+    fSubRunN = str(firstEvent)[-4:]
+    lRunN = str(lastEvent)[:6]
+    lSubRunN = str(lastEvent)[-4:]
+
+    # make a list with all runnumbers in the corresponding range
+    runList = [run for run in range(int(fRunN),int(lRunN)+1)]
+    subRunList = [run for run in range(int(fSubRunN),int(lSubRunN)+1)]
+
+    with open(pathToIndexFile, 'r') as f:
+        lines = f.readlines()
+        lines = [line.rstrip('\n') for line in lines if line.find('.root') > -1]
+        lines = [os.path.join(pathToData,line) for line in lines if __searchByIndexFile_helper__(dType,line,fRunN,fSubRunN,lRunN,lSubRunN)]
+        print('Found {0} possible files.'.format(len(lines)))
+        return lines
+
+
+def __searchByIndexFile_helper__(   dType,
+                                    x,
+                                    fRunN,
+                                    fSubRunN,
+                                    lRunN,
+                                    lSubRunN
+                                    ):
+    if not x.find(dType) > -1:
+        return False
+    if not (int(fRunN) <= int(re.findall('\d+',x)[-2]) <= int(lRunN)):
+        return False
+    if (int(fRunN) == int(re.findall('\d+',x)[-2]) and int(fSubRunN) > int(re.findall('\d+',x)[-1])):
+        return False
+    if ( int(lRunN) == int(re.findall('\d+',x)[-2]) and int(lSubRunN) < int(re.findall('\d+',x)[-1]) ):
+        return False
+    return True
