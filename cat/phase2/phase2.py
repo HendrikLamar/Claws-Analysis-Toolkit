@@ -125,7 +125,7 @@ def findFiles(
         dType="online"
         ):
     '''
-    Creates a list of paths to all files of the specified time
+    Creates a list of paths to all .root-files of the specified time
     periode and data type.
 
     Parameters
@@ -197,6 +197,8 @@ def findFiles(
                 print(exce)
                 continue
             for j in filenames:
+                if not j.endswith('.root'):
+                    continue
                 files.append(os.path.join(pathTof, j))
 
     return files
