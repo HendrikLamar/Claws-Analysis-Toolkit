@@ -16,10 +16,18 @@ from pathlib import Path
 import os
 
 
-def setPhase3(bool = False):
+def setPhase3(bool = False, direction=None):
     if bool:
         bg.picos = ['Z0', 'Z1', 'Z2', 'Z3']
         bg.phase3 = True
+
+    if direction == None:
+        raise IOError('No direction (fwd or bwd) specified!')
+    elif isinstance(direction, str):
+        if direction.find('fwd') > -1 or direction.find('bwd') > -1:
+            bg.phase3_direction = direction
+        else:
+            raise IOError('Direction not known!')
 
 def setDataPath(path=None):
     '''
@@ -38,7 +46,7 @@ def setDataPath(path=None):
                 return
         else:
             home = str(Path.home())
-            bg.path_to_data = os.path.join(home,"NAS_futDet/claws/phase3/data")
+            bg.path_to_data = os.path.join(home,"NAS_futDet/claws/phase3/data", bg.phase3_direction)
             if os.path.isdir(bg.path_to_data):
                 print('Data path is set to {}'.format(bg.path_to_data))
                 return

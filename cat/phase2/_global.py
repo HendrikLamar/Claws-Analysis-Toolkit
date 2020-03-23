@@ -11,3 +11,4 @@ path_to_data = ""
 path_to_indexFile = ""
 
 phase3 = False
+phase3_direction = None
