@@ -19,5 +19,5 @@ for dependency in soft_dependencies:
         print('ImportError: {} is missing. Useability is highly restricted without!'.format(dependency))
 
 
-from . import mipcali
-from . import phase2
+from .import mipcali
+from .import phase2

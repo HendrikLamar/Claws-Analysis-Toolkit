@@ -8,6 +8,7 @@ import pytz as tz
 from datetime import datetime, timezone
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 
 from ROOT import TFile, TH1, TH1I, TH1F, TCanvas
 
@@ -15,20 +16,33 @@ from pathlib import Path
 import os
 
 
+def setPhase3(bool = False):
+    if bool:
+        bg.picos = ['Z0', 'Z1', 'Z2', 'Z3']
+        bg.phase3 = True
+
 def setDataPath(path=None):
     '''
     Sets the path to the data on the NAS.
-    The default path is $HOME/NAS_futDet/claws/phase2/raw/
+    The default path is $HOME/NAS_futDet/claws/phase{2,3}/raw/
 
     If this does not apply to you, please define it yourself with the path variable.
     '''
 
     if path == None:
-        home = str(Path.home())
-        bg.path_to_data = os.path.join(home,"NAS_futDet/claws/phase2/raw")
-        if os.path.isdir(bg.path_to_data):
-            print('Data path is set to {}'.format(bg.path_to_data))
-            return
+        if not bg.phase3:
+            home = str(Path.home())
+            bg.path_to_data = os.path.join(home,"NAS_futDet/claws/phase2/raw")
+            if os.path.isdir(bg.path_to_data):
+                print('Data path is set to {}'.format(bg.path_to_data))
+                return
+        else:
+            home = str(Path.home())
+            bg.path_to_data = os.path.join(home,"NAS_futDet/claws/phase3/data")
+            if os.path.isdir(bg.path_to_data):
+                print('Data path is set to {}'.format(bg.path_to_data))
+                return
+
     else:
         if os.path.isdir(path):
             bg.path_to_data = path
@@ -81,7 +95,7 @@ def getAllDatesOfData( pathToData=None):
 def provideListOfDates(
     startDate,
     endDate,
-    # pathToData=None
+    pathToData=None
     ):
     '''
     Creates a list of dates where data is available.
@@ -161,6 +175,8 @@ def findFiles(
 
     for date in dates:
         pathToRuns = os.path.join(pathToData, date)
+        if not os.path.isdir(pathToRuns):
+            continue
         runsRaw = os.listdir( pathToRuns )
         runNumStart = int( runsRaw[0].split('-')[1] )
         runNumEnd = int(  runsRaw[-1].split('-')[1] )
@@ -225,87 +241,6 @@ def unixToHumanJSTTime(ts):
     cet = tz.timezone('Europe/Berlin')
     jst_time = utc_ts + jst.utcoffset(utc_ts) - cet.utcoffset(utc_ts)
     return jst_time.strftime("%Y-%m-%d %H:%M:%S.%f")
-
-
-def getPandasDF( files, onePerRunNumber=False ):
-    '''
-    Creates a pandas.DataFrame from a given set of files.
-
-    Parameters
-    ----------
-    files : list of absolute file paths; string type
-
-    onePerRunNumber : bool
-        Default: False
-        If set to True, only one file per runNumber is considered. This
-        can be useful when working with eg. 1pe integral data since it
-        is the same value for one run.
-    '''
-
-    # predefine variables
-    tmin = 0
-    tmax = 0
-    data = []
-    datas = []
-    counter = 0
-    lrunNumber = []
-
-    for file in files:
-        # if 'oneperrunnumber' is true, check if run was processed
-        # already
-        cRunNumber = int(re.findall('\d+',file)[-2])
-        if onePerRunNumber:
-            if cRunNumber in lrunNumber:
-                continue
-        # keep a list of which runnumbers are processed for
-        # 1. if onePerRunNumber is true
-        # 2. to print out how many files were found
-        lrunNumber.append(cRunNumber)
-
-        if counter %10000 == 0:
-            print('#{0} {1}'.format(counter,file))
-
-        try:
-            # read event and find correct timerange the data was
-            # recorded in
-            data = readEvent(file)
-            if counter == 0:
-                tmin = data[0]['timestamp']
-                tmax = data[0]['timestamp']
-            else:
-                for channel in data:
-                    dt = channel['timestamp']
-                    if tmin > dt:
-                        tmin = dt
-                    elif tmax < dt:
-                        tmax = dt
-            datas.append(data)
-        except Exception as exce:
-            print('{0} not available: {1}'.format(file, exce.args))
-
-        counter += 1
-
-    print('Found {} files.'.format(len(lrunNumber)))
-    print('TMin: {0} \t TMax: {1}'.format(tmin,tmax))
-    print('TMin: {0} JST\t TMax: {1} JST'.format(
-                                            unixToHumanJSTTime(tmin),
-                                            unixToHumanJSTTime(tmax)
-                                            )
-         )
-
-    try:
-        # create pandas.DataFrame and define some types
-        output = pd.DataFrame([pair for data in datas for pair in data])
-        output['time'] = pd.to_datetime(output['time'],
-                                        format="%Y-%m-%d %H:%M:%S.%f")
-        output['runNumber'] = output.runNumber.astype('int')
-        output['subRunNumber'] = output.subRunNumber.astype('int')
-    except KeyError as keyerr:
-        print('Key error was caught. Key {0} not available!'.format(
-                                                            keyerr.args)
-             )
-        return None
-    return output
 
 
 def th1XScale( th1, factor ):
@@ -462,7 +397,9 @@ def makeAvg( dfPaths,
                                                             channels,
                                                             highestVal)
          )
-    th1.Scale(1./counter)
+    #th1.Scale(1./counter)
+    # add waveforms over all channels, then average over runs
+    th1.Scale(1./len(data))
 
 
     return th1, thh
@@ -698,6 +635,15 @@ def readEvent( pathToRootFile ):
     if not tfile:
         raise IOError("TFile is empty or does not exist: " + tfile)
 
+    # fix for phase3 data
+    location = None
+    if bg.phase3:
+        if pathToRootFile.find('fwd') > -1:
+            location = 'FWD_'
+        elif pathToRootFile.find('bwd') > -1:
+            location = 'BWD_'
+        else: location = ''
+
     datas = []
     # extract the runnumber and subrunnumber from the filename
     numbers = re.findall('\d+',pathToRootFile)
@@ -714,6 +660,10 @@ def readEvent( pathToRootFile ):
     herIDV = 0
 
     for pico in bg.picos:
+        # fix for phase3 data
+        if bg.phase3:
+            pico = location + pico
+
         # read in pico specific data
         # check each time if branch exists
         ts = tfile.Get(pico + '_' + bg.items_pico['ts'])
@@ -814,9 +764,13 @@ def readEvent( pathToRootFile ):
                             ).GetBinContent(1) \
                             / ( (tth1.GetBinCenter( tth1.GetNbinsX() )
                                 +tth1.GetBinWidth(1)/2.0)
-                                *1.e-6) \
-                            / 1.e6 \
-                            / 4.0
+                                *10.e-6) \
+                                / 1.e3\
+                                / 1
+            # for the three lines above, top to bottom
+                # time per bin, phase2/phase3 = 1e-6/10e-6
+                # normalization to kHz
+                # area of scintillator
             data['timestamp'] = tsV
             data['time'] = unixToHumanJSTTime(tsV)
             data['runNumber'] = runNumber
@@ -836,31 +790,41 @@ def readEvent( pathToRootFile ):
 
             datas.append(data)
 
+    sum_rate = 0
+    for tmp_data in datas:
+        if tmp_data['rate'] > 1e3:
+            continue
+        sum_rate += tmp_data['rate']
+
+    if sum_rate > 1e3 or sum_rate < 1:
+        sum_rate = np.NaN
+
+    for tmp_data in datas:
+        tmp_data['rate_sum'] = sum_rate
+
     tfile.Close()
     return datas
 
 
 
-def getPandasDF(firstEvent,
-                lastEvent,
-                onePerRunNumber=False,
-                dtype = 'online'
-                ):
+def getPandasDF(files=None, events=None, onePerRunNumber=False, dtype = 'online'):
     '''
     Creates a pandas.DataFrame from the data given in the range defined by
     first- and lastEvent.
 
     Parameters
     ----------
-    firstEvent : int
-        10 digit number with the first event which should be considered.
-        The first 6 digits are the runNumber, the last four the subRunNumber,
-        e.g. 5001080000
+    files : list of strings
+        list of files paths of the files to be analyzed
 
-    lastEvent : int
-        10 digit number with the last event which should be considered.
+        If files is not give, events must be given!
+
+    events : tuple of two ints, e.g. (int, int)
+        10 digit number for each the first and last event which should be considered.
         The first 6 digits are the runNumber, the last four the subRunNumber,
-        e.g. 5001080199
+        e.g. (5001080000, 5001080199)
+
+        If no events are given, a list fo files must be given!
 
     onePerRunNumber : bool
         Default: False
@@ -879,10 +843,14 @@ def getPandasDF(firstEvent,
     datas = []
     counter = 0
     lrunNumber = []
-    files = _findByIndexFile(firstEvent,
-                            lastEvent,
-                            dtype = dtype
-                            )
+
+    if files == None:
+        if len(events) != 2:
+            raise Exception('events has to few/many entries!')
+        files = _findByIndexFile(events[0],
+                                events[1],
+                                dtype = dtype
+                                )
 
     for file in files:
         # if 'oneperrunnumber' is true, check if run was processed already

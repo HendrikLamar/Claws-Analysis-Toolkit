@@ -1,5 +1,5 @@
-#picos = ['Top_Forward', 'Top_Backward', 'Bottom_Forward', 'Bottom_Backward']
-picos = ['FWD_Z0', 'FWD_Z1', 'FWD_Z2', 'FWD_Z3', 'BWD_Z0', 'BWD_Z1', 'BWD_Z2', 'BWD_Z3']
+picos = ['Top_Forward', 'Top_Backward', 'Bottom_Forward', 'Bottom_Backward']
+#picos = ['FWD_Z0', 'FWD_Z1', 'FWD_Z2', 'FWD_Z3', 'BWD_Z0', 'BWD_Z1', 'BWD_Z2', 'BWD_Z3']
 channels = ['A', 'B', 'C','D']
 items_channel = {'1pe' : '1peNormalized',
         '1peVStotal' : '1peVStotal', 'mips' : 'mipAbsolute', 'reco' : 'wfReco', 'cdf' : 'cdf'}
@@ -9,3 +9,5 @@ items_pico = {'run' : 'beast_runNumber', 'subRun' : 'beast_subRunNumber', 'ts' :
 
 path_to_data = ""
 path_to_indexFile = ""
+
+phase3 = False
