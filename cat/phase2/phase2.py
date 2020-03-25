@@ -798,13 +798,15 @@ def readEvent( pathToRootFile ):
 
             datas.append(data)
 
+    # sum the rate over all channels
     sum_rate = 0
     for tmp_data in datas:
+        # exclude outliers. This value is arbitrarily chosen.
         if tmp_data['rate'] > 1e3:
             continue
         sum_rate += tmp_data['rate']
 
-    if sum_rate > 1e3 or sum_rate < 1:
+    if sum_rate > 1e6 or sum_rate < 1:
         sum_rate = np.NaN
 
     for tmp_data in datas:
