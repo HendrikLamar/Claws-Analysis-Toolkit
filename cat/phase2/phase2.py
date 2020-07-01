@@ -571,21 +571,44 @@ def makeAveragedWf( rawWFdatafram ):
 def makePathToInfo( filepath ):
     '''
     Helper function for readEvent function, only for early phase 2 data:
-    Find info*.ini to corresponding root file
+    Find info*.ini to corresponding online file
 
     Parameters
     ----------
-    pIni : str
-        Path to info*.ini file
+    filepath : str
+        Path to online*.root file
 
     Returns
     -------
-    timestamp : str
-        Returns the info*.ini file to the given .root file.
+    str
+        Returns the info*.ini file to the given online*.root file.
     '''
     filepath = filepath.replace('online', 'raw/physics',1)
     filepath = filepath.replace('online', 'info')
     filepath = filepath.replace('root','ini')
+
+    return filepath
+
+
+def makePathToRaw( filepath ):
+    '''
+    Helper function for readEvent function, only for early phase 2 data:
+    Find physics*.root to corresponding online file
+
+    Parameters
+    ----------
+    filepath  : str
+        Path to online*.root file
+
+    Returns
+    -------
+    str
+        Returns the physics*.root file to the given online*.root file.
+        Note: There is no guarantee that the physics file exists! The returned
+        path is a hypothetical one.
+    '''
+    filepath = filepath.replace('online', 'raw/physics',1)
+    filepath = filepath.replace('online', 'physics')
 
     return filepath
 
@@ -795,6 +818,7 @@ def readEvent( pathToRootFile ):
             data['path'] = pathToRootFile
             data['OnePe'] = onePeV
             data['OnePeRatio'] = onePeRatioV
+            data['rawExists'] = os.path.isfile(makePathToRaw(pathToRootFile))
 
             datas.append(data)
 
