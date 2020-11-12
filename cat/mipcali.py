@@ -143,7 +143,7 @@ def pdStoTH1F(series, bins = 0, name = 'th1', lower=None, upper=None):
         bins = int(upper-lower)
 
     tf1 = TH1F(name, name, bins, lower, upper)
-    for i in range(len(series)):
+    for i in series.index:
         tf1.Fill(series[i])
 
     return tf1
@@ -180,8 +180,11 @@ def fitGausMax(th1f, sigmaRange = 1.):
     fitf.SetParameters(th1f.GetMaximum(),th1f.GetBinCenter(th1f.GetMaximumBin()), th1f.GetStdDev())
     th1f.Fit('f1', 'LR')
     
-    fitResults = {  'mean' : fitf.GetParameter(1),
+    fitResults = {  'amplitude' : fitf.GetParameter(0),
+                    'mean' : fitf.GetParameter(1),
+                    'mean_err' : fitf.GetParError(1),
                     'sigma' : fitf.GetParameter(2), 
+                    'sigma_err' : fitf.GetParError(2),
                     'ndf' : fitf.GetNDF(),
                     'chisquare' : fitf.GetChisquare()}
 
