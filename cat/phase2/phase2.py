@@ -913,7 +913,7 @@ def getPandasDF(files=None, events=None, onePerRunNumber=False, dtype = 'online'
     counter = 0
     lrunNumber = []
 
-    if files == None:
+    if not (isinstance(files, list) or isinstance(files, np.ndarray)):
         if len(events) != 2:
             raise Exception('events has to few/many entries!')
         files = _findByIndexFile(events[0],
