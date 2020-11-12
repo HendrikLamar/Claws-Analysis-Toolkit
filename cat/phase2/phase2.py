@@ -1,5 +1,6 @@
 from . import _global as bg
 
+import numbers as lnumbers
 import math
 import configparser, os, re, copy, platform
 
@@ -644,7 +645,7 @@ def getTimestamp( pIni ):
 
     return timestamp
 
-def readEvent( pathToRootFile ):
+def readEvent( pathToRootFile, wf_maxLength=None, wf_minLength=None ):
     '''
     Reads one event/file
     Is dependent on the getTimestamp and makePathToInfo helper functions
@@ -654,6 +655,13 @@ def readEvent( pathToRootFile ):
     ----------
     pathToRootFile : string
         Path to the phase2 root file.
+
+    wf_maxLength : int
+        Cut all wfs longer at wf_maxLength, if they are longer. wf_maxLength is
+        the number of xBins.
+
+    wf_minLength : int
+        Reject all wfs shorter than wf_minLength.
 
     Returns
     -------
@@ -737,11 +745,27 @@ def readEvent( pathToRootFile ):
                             + channel
                             + '_'
                             + bg.items_channel['reco'])
-            if not tth1:
+
+            if not isinstance(tth1, TH1):
                 raise Exception(
                         "{0}: Reco {1} {2} not available".format(
                             pathToRootFile, pico,channel)
                             )
+
+            # in some cases it makes sense to cut all wfs at a certain length
+            if isinstance(wf_maxLength, lnumbers.Number) and tth1.GetNbinsX() > wf_maxLength:
+                xlow = tth1.GetBinCenter(1)-tth1.GetBinWidth(1)/2.
+                xhigh = tth1.GetBinCenter(wf_maxLength)+tth1.GetBinWidth(wf_maxLength)/2.
+                _tth1 = TH1F(f'{tth1.GetName()}_shrinked', f'{tth1.GetName()}_shrinked', int(wf_maxLength), xlow, xhigh)
+
+                for _i in range(tth1.GetNbinsX()):
+                    _tth1.SetBinContent(_i+1, tth1.GetBinContent(_i+1))
+                tth1 = _tth1
+                
+            # ....or to reject too small wfs
+            if isinstance(wf_minLength, lnumbers.Number) and tth1.GetNbinsX() < wf_minLength:
+                continue
+
 
 
             onePeV = tfile.Get(pico
@@ -841,7 +865,7 @@ def readEvent( pathToRootFile ):
 
 
 
-def getPandasDF(files=None, events=None, onePerRunNumber=False, dtype = 'online'):
+def getPandasDF(files=None, events=None, onePerRunNumber=False, dtype = 'online', **kwargs):
     '''
     Creates a pandas.DataFrame from the data given in the range defined by
     first- and lastEvent.
@@ -868,6 +892,9 @@ def getPandasDF(files=None, events=None, onePerRunNumber=False, dtype = 'online'
 
     dtype : str
         Options are 'physics' or 'online', depending on the data you want.
+
+    **kwargs
+        ...are given to the readEvent method. See cat.readEvent for further details.
     '''
 
     # predefine variables
@@ -902,7 +929,7 @@ def getPandasDF(files=None, events=None, onePerRunNumber=False, dtype = 'online'
 
         try:
             # read event and find correct timerange the data was recorded in
-            data = readEvent(file)
+            data = readEvent(file, **kwargs)
             if counter == 0:
                 tmin = data[0]['timestamp']
                 tmax = data[0]['timestamp']
