@@ -787,8 +787,9 @@ def readEvent( pathToRootFile, wf_maxLength=None, wf_minLength=None ):
             data['minVal'] = tth1.GetMinimum()
 
             # get the time until 50/90% of the MIPs can be found in the wf
+            timeTo33 = 0
             timeTo50 = 0
-            timeTo70 = 0
+            timeTo66 = 0
             timeTo90 = 0
             sum = 0
             totalMIPs = tfile.Get( pico
@@ -800,15 +801,18 @@ def readEvent( pathToRootFile, wf_maxLength=None, wf_minLength=None ):
             if totalMIPs > 0:
                 for i in range(tth1.GetNbinsX()):
                     sum += tth1.GetBinContent(i+1)
-                    if (timeTo50 == 0) and (sum / totalMIPs > 0.5):
+                    if (timeTo33 == 0) and (sum / totalMIPs > 0.33):
+                        timeTo33 = tth1.GetBinCenter(i+1)
+                    elif (timeTo50 == 0) and (sum / totalMIPs > 0.5):
                         timeTo50 = tth1.GetBinCenter(i+1)
-                    elif (timeTo70 == 0) and (sum / totalMIPs > 0.7):
-                        timeTo70 = tth1.GetBinCenter(i+1)
+                    elif (timeTo66 == 0) and (sum / totalMIPs > 0.66):
+                        timeTo66 = tth1.GetBinCenter(i+1)
                     elif (timeTo90 == 0) and (sum / totalMIPs > 0.9):
                         timeTo90 = tth1.GetBinCenter(i+1)
                         break
+            data['timeTo33'] = timeTo33
             data['timeTo50'] = timeTo50
-            data['timeTo70'] = timeTo70
+            data['timeTo66'] = timeTo66
             data['timeTo90'] = timeTo90
 
 
