@@ -118,11 +118,13 @@ def provideListOfDates(
     endDate : string
         should be given in the form of JJJJ-MM-DD
 
-    pathToData : string
+    pathToData : string (optional)
         path to the data, up to the level of the JJJJ-MM-DD dir
         structure.
 
         !Should be an absolute path!
+
+        Default is getDataPath()
 
     Returns
     -------
