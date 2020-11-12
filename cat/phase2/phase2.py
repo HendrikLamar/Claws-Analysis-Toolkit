@@ -844,11 +844,13 @@ def readEvent( pathToRootFile, wf_maxLength=None, wf_minLength=None ):
             data['herGate'] = herGV
             data['lerID'] = lerIDV
             data['herID'] = herIDV
-            data['xbins'] = tth1.GetNbinsX()
+            data['NbinsX'] = tth1.GetNbinsX()
+            data['xBinWidth'] = tth1.GetBinWidth(1)
             data['path'] = pathToRootFile
             data['OnePe'] = onePeV
             data['OnePeRatio'] = onePeRatioV
             data['rawExists'] = os.path.isfile(makePathToRaw(pathToRootFile))
+
 
             datas.append(data)
 
