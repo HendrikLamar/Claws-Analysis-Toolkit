@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='claws-analysis-toolkit',
-      version='0.1.1',
+      version='0.1.2',
       description='Framework to handle the Claws data',
       url='https://github.com/HendrikLamar/cat',
       author='Hendrik Windel',

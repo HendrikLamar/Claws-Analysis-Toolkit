@@ -528,7 +528,7 @@ def saveFig(fig,
         fig.savefig('{0}.png'.format(dtitle), dpi=dpi_fix)
 
 
-def TH1ToDf(th1):
+def TH1ToDf(th1, name=None):
     '''
     Converts a ROOT.TH1 to a pandas.DataFrame.
 
@@ -537,15 +537,19 @@ def TH1ToDf(th1):
     th1 : ROOT.TH1
         Root histogram.
 
+    name : str
+        Give the y axis a proper naming.
+
     Returns
     -------
     pandas.DataFrame
-        The index is the x axis, bin content is column 'y'.
+        The index is the x axis, bin content is column 'y' or 'name'.
     '''
-    d = { 'x' : [], 'y' : []}
+    content_name = 'y' if name is None else name
+    d = { 'x' : [], content_name : []}
     for i in range(1,th1.GetNbinsX()):
         d['x'].append(th1.GetBinCenter(i))
-        d['y'].append(th1.GetBinContent(i))
+        d[content_name].append(th1.GetBinContent(i))
 
     return pd.DataFrame(d).set_index('x')
 
