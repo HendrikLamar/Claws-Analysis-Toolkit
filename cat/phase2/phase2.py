@@ -829,7 +829,7 @@ def readEvent( pathToRootFile, wf_maxLength=None, wf_minLength=None ):
                             ).GetBinContent(1) \
                             / ( (tth1.GetBinCenter( tth1.GetNbinsX() )
                                 +tth1.GetBinWidth(1)/2.0)
-                                *10.e-6) \
+                                *1.e-6) \
                                 / 1.e3\
                                 / 1
             # for the three lines above, top to bottom
