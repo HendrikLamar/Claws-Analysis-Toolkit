@@ -959,7 +959,8 @@ def getPandasDF(files=None, events=None, onePerRunNumber=False, dtype = 'online'
                         tmax = dt
             datas.append(data)
         except Exception as exce:
-            print('{0} not available: {1}'.format(file, exce.args))
+            pass
+#            print('{0} not available: {1}'.format(file, exce.args))
 
         counter += 1
 
