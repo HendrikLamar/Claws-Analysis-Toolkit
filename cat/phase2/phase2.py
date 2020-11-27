@@ -662,12 +662,12 @@ def readEvent( pathToRootFile, wf_maxLength=None, wf_minLength=None ):
     pathToRootFile : string
         Path to the phase2 root file.
 
-    wf_maxLength : int
+    wf_maxLength : float
         Cut all wfs longer at wf_maxLength, if they are longer. wf_maxLength is
-        the number of xBins.
+        the waveform length calculated as wf.GetNbinsX()*wf.GetBinWidth(1)+wf.GetBinWidth(1)/2.
 
     wf_minLength : int
-        Reject all wfs shorter than wf_minLength.
+        Reject all wfs shorter than wf_minLength. The unit is similar to wf_maxLength above.
 
     Returns
     -------
@@ -759,10 +759,13 @@ def readEvent( pathToRootFile, wf_maxLength=None, wf_minLength=None ):
                             )
 
             # in some cases it makes sense to cut all wfs at a certain length
-            if isinstance(wf_maxLength, lnumbers.Number) and tth1.GetNbinsX() > wf_maxLength:
+            if isinstance(wf_maxLength, lnumbers.Number) and (tth1.GetNbinsX()*tth1.GetBinWidth(1)+tth1.GetBinWidth(1)/2.) > wf_maxLength:
                 xlow = tth1.GetBinCenter(1)-tth1.GetBinWidth(1)/2.
-                xhigh = tth1.GetBinCenter(wf_maxLength)+tth1.GetBinWidth(wf_maxLength)/2.
-                _tth1 = TH1F(f'{tth1.GetName()}_shrinked', f'{tth1.GetName()}_shrinked', int(wf_maxLength), xlow, xhigh)
+                maxBins = int(round(wf_maxLength/tth1.GetBinWidth(1)))
+                xhigh = tth1.GetBinCenter(maxBins)+tth1.GetBinWidth(1)/2.
+
+                #xhigh = tth1.GetBinCenter(wf_maxLength)+tth1.GetBinWidth(wf_maxLength)/2
+                _tth1 = TH1F(f'{tth1.GetName()}_shrinked', f'{tth1.GetName()}_shrinked', maxBins, xlow, xhigh)
 
                 for _i in range(tth1.GetNbinsX()):
                     _tth1.SetBinContent(_i+1, tth1.GetBinContent(_i+1))
@@ -850,6 +853,7 @@ def readEvent( pathToRootFile, wf_maxLength=None, wf_minLength=None ):
             data['herID'] = herIDV
             data['NbinsX'] = tth1.GetNbinsX()
             data['xBinWidth'] = tth1.GetBinWidth(1)
+            data['wf_len'] = tth1.GetBinWidth(1)*data['NbinsX']+tth1.GetBinWidth(1)/2.
             data['path'] = pathToRootFile
             data['OnePe'] = onePeV
             data['OnePeRatio'] = onePeRatioV
