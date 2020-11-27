@@ -11,6 +11,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
+from tqdm.auto import tqdm as tqdm
 from ROOT import TFile, TH1, TH1I, TH1F, TCanvas
 
 from pathlib import Path
@@ -881,7 +882,7 @@ def readEvent( pathToRootFile, wf_maxLength=None, wf_minLength=None ):
 
 
 
-def getPandasDF(files=None, events=None, onePerRunNumber=False, dtype = 'online', **kwargs):
+def getPandasDF(files=None, events=None, onePerRunNumber=False, dtype = 'online', hideProgress=False, **kwargs):
     '''
     Creates a pandas.DataFrame from the data given in the range defined by
     first- and lastEvent.
@@ -909,6 +910,9 @@ def getPandasDF(files=None, events=None, onePerRunNumber=False, dtype = 'online'
     dtype : str
         Options are 'physics' or 'online', depending on the data you want.
 
+    hideProgess : bool
+        Turn on/off the progress bar by tqdm. Default: False
+
     **kwargs
         ...are given to the readEvent method. See cat.readEvent for further details.
     '''
@@ -929,7 +933,7 @@ def getPandasDF(files=None, events=None, onePerRunNumber=False, dtype = 'online'
                                 dtype = dtype
                                 )
 
-    for file in files:
+    for file in tqdm(files, disable=hideProgress, desc='Files'):
         # if 'oneperrunnumber' is true, check if run was processed already
         cRunNumber = int(re.findall('\d+',file)[-2])
         if onePerRunNumber:
@@ -939,9 +943,6 @@ def getPandasDF(files=None, events=None, onePerRunNumber=False, dtype = 'online'
         # 1. if onePerRunNumber is true
         # 2. to print out how many files were found
         lrunNumber.append(cRunNumber)
-
-        if counter %10000 == 0:
-            print('#{0} {1}'.format(counter,file))
 
         try:
             # read event and find correct timerange the data was recorded in

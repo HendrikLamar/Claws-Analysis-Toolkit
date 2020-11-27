@@ -8,6 +8,6 @@ setup(name='claws-analysis-toolkit',
       author_email='hwindel@mpp.mpg.de',
       license='GPL-3.0',
       packages=['cat'],
-      install_requires=['pandas', 'configparser'],
+      install_requires=['pandas', 'configparser', 'tqdm', 'numpy'],
       zip_safe=False)
 
