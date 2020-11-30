@@ -773,7 +773,7 @@ def readEvent( pathToRootFile, wf_maxLength=None, wf_minLength=None ):
                 tth1 = _tth1
                 
             # ....or to reject too small wfs
-            if isinstance(wf_minLength, lnumbers.Number) and tth1.GetNbinsX() < wf_minLength:
+            if isinstance(wf_minLength, lnumbers.Number) and (tth1.GetNbinsX()*tth1.GetBinWidth(1)+tth1.GetBinWidth(1)/2.) < wf_minLength:
                 continue
 
 
