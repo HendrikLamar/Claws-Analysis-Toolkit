@@ -652,7 +652,7 @@ def getTimestamp( pIni ):
 
     return timestamp
 
-def readEvent( pathToRootFile, wf_maxLength=None, wf_minLength=None ):
+def readEvent( pathToRootFile, wf_maxLength=None, wf_minLength=None , correctCirculatingBackground=False):
     '''
     Reads one event/file
     Is dependent on the getTimestamp and makePathToInfo helper functions
@@ -669,6 +669,11 @@ def readEvent( pathToRootFile, wf_maxLength=None, wf_minLength=None ):
 
     wf_minLength : int
         Reject all wfs shorter than wf_minLength. The unit is similar to wf_maxLength above.
+
+    correctCirculatingBackground : bool
+        If true, calculates the average bin content of the first 100us and subtracts this value from each bin.
+        Negative entries are set to zero. Default: False
+        
 
     Returns
     -------
@@ -776,6 +781,15 @@ def readEvent( pathToRootFile, wf_maxLength=None, wf_minLength=None ):
             if isinstance(wf_minLength, lnumbers.Number) and (tth1.GetNbinsX()*tth1.GetBinWidth(1)+tth1.GetBinWidth(1)/2.) < wf_minLength:
                 continue
 
+
+            _binNo = int(round(100/tth1.GetBinWidth(1)))
+            meanContent100us = tth1.Integral(1,_binNo)/_binNo
+            data['circB_mean'] = meanContent100us
+            if correctCirculatingBackground:
+                # Suppress normal background to highlight injection background.
+                # Find average bin content of the first 100 us and subtract this value from each bin. 
+                for _i in range(tth1.GetNbinsX()):
+                    tth1.SetBinContent(_i+1, tth1.GetBinContent(_i+1)-meanContent100us if tth1.GetBinContent(_i+1)-meanContent100us > 0 else 0)
 
 
             onePeV = tfile.Get(pico
